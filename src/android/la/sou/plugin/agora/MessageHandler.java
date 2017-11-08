@@ -37,10 +37,11 @@ public class MessageHandler extends IRtcEngineEventHandler {
         } catch (JSONException ignored) {}
     }
 
-    public void onWarning(int warn) {
+    public void onWarning(int warn, const char* msg) {
         try {
             JSONObject data = new JSONObject();
             data.put("warn", warn);
+            data.put("msg", msg);
             Agora.notifyEvent("onWarning", data);
         } catch (JSONException ignored) {}
     }
@@ -85,6 +86,7 @@ public class MessageHandler extends IRtcEngineEventHandler {
         } catch (JSONException ignored) {}
     }
 
+    // Todo: different from 1.14.0
     public void onLeaveChannel(IRtcEngineEventHandler.RtcStats stats) {
         try {
             JSONObject data = new JSONObject();
@@ -99,6 +101,14 @@ public class MessageHandler extends IRtcEngineEventHandler {
             temp.put("cpuAppUsage", stats.cpuAppUsage);
             data.put("stats", temp);
             Agora.notifyEvent("onLeaveChannel", data);
+        } catch (JSONException ignored) {}
+    }
+
+    public void onAudioRouteChanged(int routing) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put("routing", routing);
+            Agora.notifyEvent("onAudioRouteChanged", data);
         } catch (JSONException ignored) {}
     }
 

@@ -30,6 +30,9 @@ public class Agora extends CordovaPlugin {
 
     protected Context appContext;
 
+    protected SurfaceView surfaceViewLocal;
+    protected SurfaceView surfaceViewRemote;
+
     private static CallbackContext eventCallbackContext;
 
     @Override
@@ -101,6 +104,16 @@ public class Agora extends CordovaPlugin {
             return true;
         }
 
+        if (action.equals("enableAudio")) {
+            AgoraClient.getInstance().getRtcEngine().enableAudio();
+            return true;
+        }
+
+        if (action.equals("disableAudio")) {
+            AgoraClient.getInstance().getRtcEngine().disableAudio();
+            return true;
+        }
+
         if (action.equals("joinChannel")) {
             final String channelKey = args.getString(0);
             final String channelName = args.getString(1);
@@ -140,6 +153,104 @@ public class Agora extends CordovaPlugin {
             return true;
         }
 
+        if (action.equals("setLocalVoicePitch")) {
+            final Int pitchInt = args.getInt(0);
+            final double pitch;
+            if (pitchInt < 50 || pitchInt > 200) {
+                pitch = 1.0;
+            } else {
+                pitch = pitchInt / 100;
+            }
+
+            int result =  AgoraClient.getInstance().getRtcEngine().setLocalVoicePitch(pitch);
+            
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec setLocalVoicePicth failed!"));
+            } else {
+                callbackContext.success();
+            }
+
+            return true;
+        }
+
+        // Todo: set audio profile
+        // startEchoTest | stopEchoTest
+        // enableLastmileTest | disableLastmileTest
+        if (action.equals("setAudioProfile")) {
+            final int profile = args.getInt(0);
+            final int scenario = args.getInt(1);
+
+            int result = AgoraClient.getInstance().getRtcEngine().setAudioProfile(profile, scenario);
+
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec setAudioProfile failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
+
+        if (action.equals("createRendererView")) {
+            appActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    surfaceViewLocal = AgoraClient.getInstance().getRtcEngine()
+                            .createRendererView(appContext);
+                    surfaceViewRemote = AgoraClient.getInstance().getRtcEngine()
+                            .createRendererView(appContext);
+                }
+            });
+        }
+
+        if (action.equals("setVideoProfile")) {
+            final int profile = args.getInt(0);
+            final boolean swapWidthAndHeight = args.getInt(1) != 0;
+
+            int result = AgoraClient.getInstance().getRtcEngine().setVideoProfile(profile, swapWidthAndHeight);
+
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec setVideoProfile failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
+
+        if (action.equals("setupLocalVideo")) {
+            final int uid = args.getInt(0);
+
+            VideoCanvas videoCanvas = new VideoCanvas();
+            videoCanvas.view = surfaceViewLocal;
+            videoCanvas.reanderMode = 2;    // RENDER_MODE_FIT
+
+            int result = AgoraClient.getInstance().getRtcEngine().setupLocalVideo(videoCanvas);
+
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec setupLocalVideo failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
+
+        if (action.equals("setupRemoteVideo")) {
+            final int uid = args.getInt(0);
+
+            VideoCanvas videoCanvas = new VideoCanvas();
+            videoCanvas.view = surfaceViewRemote;
+            videoCanvas.reanderMode = 2;    // RENDER_MODE_FIT
+
+            int result = AgoraClient.getInstance().getRtcEngine().setupRemoteVideo(videoCanvas);
+
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec setupRemoteVideo failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
+
+
         if (action.equals("disableVideo")) {
             int result =  AgoraClient.getInstance().getRtcEngine().disableVideo();
 
@@ -163,7 +274,99 @@ public class Agora extends CordovaPlugin {
             return true;
         }
 
+        if (action.equals("setVideoQualityParameters")) {
+            final boolean prefer = args.getInt(0) != 0;
 
+            int result =  AgoraClient.getInstance().getRtcEngine().setVideoQualityParameters(prefer);
+            
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec setVideoQualityParameters failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
+
+        if (action.equals("startPreview")) {
+            int result =  AgoraClient.getInstance().getRtcEngine().startPreview();
+
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec startPreview failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
+
+        if (action.equals("stopPreview")) {
+            int result =  AgoraClient.getInstance().getRtcEngine().stopPreview();
+
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec stopPreview failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
+
+        if (action.equals("setLocalRenderMode")) {
+            return true;
+        }
+
+        if (action.equals("setRemoteRenderMode")) {
+            return true;
+        }
+
+        if (action.equals("switchCamera")) {
+            int result =  AgoraClient.getInstance().getRtcEngine().switchCamera();
+            
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec switchCamera failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
+
+        if (action.equals("muteLocalVideoStream")) {
+            final boolean muted = args.getInt(0) != 0;
+
+            int result =  AgoraClient.getInstance().getRtcEngine().muteLocalVideoStream(muted);
+            
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec muteLocalVideoStream failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
+
+        if (action.equals("muteAllRemoteVideoStream")) {
+            final boolean muted = args.getInt(0) != 0;
+
+            int result =  AgoraClient.getInstance().getRtcEngine().muteAllRemoteVideoStream(muted);
+            
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec muteAllRemoteVideoStream failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
+
+        if (action.equals("muteRemoteVideoStream")) {
+            final int uid = args.getInt(0);
+            final boolean muted = args.getInt(1) != 0;
+
+            int result =  AgoraClient.getInstance().getRtcEngine().muteRemoteVideoStream(uid, muted);
+            
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec muteRemoteVideoStream failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
 
         if (action.equals("enableSpeakerphone")) {
             int result =  AgoraClient.getInstance().getRtcEngine().setEnableSpeakerphone(true);
