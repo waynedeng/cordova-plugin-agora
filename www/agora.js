@@ -165,6 +165,14 @@
             cordova.exec(successCallback, failCallback, 'Agora', 'muteRemoteVideoStream', [uid, muted]);
         },
 
+        rate: function(callId, rating, description, successCallback, failCallback) {
+            cordova.exec(successCallback, failCallback, 'Agora', 'setLocalVideoPosition', [callId, rating, description]);
+        },
+
+        complain: function(callId, description, successCallback, failCallback) {
+            cordova.exec(successCallback, failCallback, 'Agora', 'setLocalVideoPosition', [callId, description]);
+        },
+
         setLocalVideoPosition: function(position, successCallback, failCallback) {
             cordova.exec(successCallback, failCallback, 'Agora', 'setLocalVideoPosition', [position]);
         },

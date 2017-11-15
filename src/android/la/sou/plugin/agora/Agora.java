@@ -197,18 +197,6 @@ public class Agora extends CordovaPlugin {
                     surfaceViewRemote = AgoraClient.getInstance().getRtcEngine()
                             .CreateRendererView(appContext);
 
-
-//                    FrameLayout rootView = (FrameLayout) appActivity.findViewById(android.R.id.content);
-//                    FrameLayout.LayoutParams webparams = new FrameLayout.LayoutParams(720, 1080);
-//                    ViewGroup bp = (ViewGroup) browserView.getParent();
-//                    bp.removeView(browserView);
-//                    rootView.addView(browserView, 0, webparams);
-//                    surfaceViewLocal.setId(101);
-//                    rootView.addView(surfaceViewLocal, 1, params);
-//                    appActivity.addContentView(browserView, webparams);
-//                    appActivity.addContentView(surfaceViewLocal, params);
-//                    appActivity.addContentView(surfaceViewRemote);
-//
                     if (surfaceViewLocal != null && surfaceViewRemote != null) {
                         appLayout.addView(surfaceViewLocal);
                         appLayout.addView(surfaceViewRemote);
@@ -339,7 +327,6 @@ public class Agora extends CordovaPlugin {
             return true;
         }
 
-
         if (action.equals("disableVideo")) {
             int result =  AgoraClient.getInstance().getRtcEngine().disableVideo();
 
@@ -451,6 +438,35 @@ public class Agora extends CordovaPlugin {
             
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec muteRemoteVideoStream failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
+
+        if (action.equals("rate")) {
+            final String callId = args.getString(0);
+            final int rating = args.getInt(1);
+            final String description = args.getString(2);
+            
+            int result = AgoraClient.getInstance().getRtcEngine().rate(callId, rating, description);
+
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec rate failed!"));
+            } else {
+                callbackContext.success();
+            }
+            return true;
+        }
+
+        if (action.equals("complain")) {
+            final String callId = args.getString(0);
+            final String description = args.getString(1);
+            
+            int result = AgoraClient.getInstance().getRtcEngine().complain(callId, description);
+
+            if(AgoraError.ERR_OK != result) {
+                callbackContext.error(ClientError.Build(result, "exec complain failed!"));
             } else {
                 callbackContext.success();
             }
