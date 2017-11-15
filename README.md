@@ -11,7 +11,28 @@ Method:
         disableVideo: function(successCallback, failCallback) {},
         enableSpeakerphone: function(successCallback, failCallback) {},
         disableSpeakerphone: function(successCallback, failCallback) {},
-        getCallId: function(successCallback, failCallback) {}
+        getCallId: function(successCallback, failCallback) {},
+		enableAudioVolumeIndication: function(interval, smooth, successCallback, failCallback) {},
+        enableAudio: function(successCallback, failCallback) {},
+        disableAudio: function(successCallback, failCallback) {},
+        setLocalVoicePitch: function(pitch, successCallback, failCallback) {},
+        setAudioProfile: function(profile, scenario, successCallback, failCallback) {},
+        createRendererView: function(successCallback, failCallback) {},
+        setVideoProfile: function(profile, swapWidthAndHeight, successCallback, failCallback) {},
+        setupLocalVideo: function(uid, successCallback, failCallback) {},
+        setupRemoteVideo: function(uid, successCallback, failCallback) {},
+        setVideoQualityParameters: function(prefer, successCallback, failCallback) {},
+        startPreview: function(successCallback, failCallback) {},
+        stopPreview: function(successCallback, failCallback) {},
+        setLocalRenderMode: function(mode, successCallback, failCallback) {},
+        setRemoteRenderMode: function(mode, successCallback, failCallback) {},
+        switchCamera: function(successCallback, failCallback) {},
+        muteLocalVideoStream: function(muted, successCallback, failCallback) {},
+        muteAllRemoteVideoStreams: function(muted, successCallback, failCallback) {},
+        muteRemoteVideoStream: function(uid, mode, successCallback, failCallback) {},
+        setLocalVideoPosition: function(position, successCallback, failCallback) {},
+        setRemoteVideoPosition: function(position, successCallback, failCallback) {},
+        setWebVidePostion: function(position, successCallback, failCallback) {}
 ```
 
 ```
