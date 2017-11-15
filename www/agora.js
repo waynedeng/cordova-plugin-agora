@@ -157,11 +157,23 @@
             cordova.exec(successCallback, failCallback, 'Agora', 'muteLocalVideoStream', [muted]);
         },
 
-        muteAllRemoteVideoStream: function(muted, successCallback, failCallback) {
-            cordova.exec(successCallback, failCallback, 'Agora', 'muteAllRemoteVideoStream', [muted]);
+        muteAllRemoteVideoStreams: function(muted, successCallback, failCallback) {
+            cordova.exec(successCallback, failCallback, 'Agora', 'muteAllRemoteVideoStreams', [muted]);
         },
 
         muteRemoteVideoStream: function(uid, mode, successCallback, failCallback) {
             cordova.exec(successCallback, failCallback, 'Agora', 'muteRemoteVideoStream', [uid, muted]);
         },
+
+        setLocalVideoPosition: function(position, successCallback, failCallback) {
+            cordova.exec(successCallback, failCallback, 'Agora', 'setLocalVideoPosition', [position]);
+        },
+
+        setRemoteVideoPosition: function(position, successCallback, failCallback) {
+            cordova.exec(successCallback, failCallback, 'Agora', 'setLocalVideoPosition', [position]);
+        },
+
+        setWebVidePostion: function(position, successCallback, failCallback) {
+            cordova.exec(successCallback, failCallback, 'Agora', 'setWebViewPosition', [position]);
+        }
     };

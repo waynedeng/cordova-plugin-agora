@@ -17,7 +17,11 @@ public class AgoraClient {
         _messageHandler = new MessageHandler();
         _applicationContext = applicationContext;
 
-        _rtcEngine = RtcEngine.create(_applicationContext, _appId, _messageHandler);
+        try {
+            _rtcEngine = RtcEngine.create(_applicationContext, _appId, _messageHandler);
+        } catch (Exception e) {
+            
+        }
     }
 
     public MessageHandler getMessageHandler() {

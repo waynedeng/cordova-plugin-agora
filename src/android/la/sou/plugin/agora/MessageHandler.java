@@ -37,7 +37,7 @@ public class MessageHandler extends IRtcEngineEventHandler {
         } catch (JSONException ignored) {}
     }
 
-    public void onWarning(int warn, const char* msg) {
+    public void onWarning(int warn, String msg) {
         try {
             JSONObject data = new JSONObject();
             data.put("warn", warn);

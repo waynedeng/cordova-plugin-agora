@@ -2,14 +2,9 @@ package la.sou.plugin.agora;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.SurfaceView;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 
 import io.agora.rtc.*;
 import io.agora.rtc.video.VideoCanvas;
@@ -20,7 +15,6 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONStringer;
 
 public class Agora extends CordovaPlugin {
 
@@ -30,6 +24,8 @@ public class Agora extends CordovaPlugin {
 
     protected Context appContext;
 
+    protected FrameLayout webView;
+    protected FrameLayout appLayout;
     protected SurfaceView surfaceViewLocal;
     protected SurfaceView surfaceViewRemote;
 
@@ -40,6 +36,8 @@ public class Agora extends CordovaPlugin {
 
         appContext = this.cordova.getActivity().getApplicationContext();
         appActivity = cordova.getActivity();
+        webView = appActivity.findViewById(100);
+        appLayout = (FrameLayout) webView.getParent();
         super.pluginInitialize();
     }
 
@@ -154,7 +152,7 @@ public class Agora extends CordovaPlugin {
         }
 
         if (action.equals("setLocalVoicePitch")) {
-            final Int pitchInt = args.getInt(0);
+            final int pitchInt = args.getInt(0);
             final double pitch;
             if (pitchInt < 50 || pitchInt > 200) {
                 pitch = 1.0;
@@ -195,11 +193,106 @@ public class Agora extends CordovaPlugin {
                 @Override
                 public void run() {
                     surfaceViewLocal = AgoraClient.getInstance().getRtcEngine()
-                            .createRendererView(appContext);
+                            .CreateRendererView(appContext);
                     surfaceViewRemote = AgoraClient.getInstance().getRtcEngine()
-                            .createRendererView(appContext);
+                            .CreateRendererView(appContext);
+
+
+//                    FrameLayout rootView = (FrameLayout) appActivity.findViewById(android.R.id.content);
+//                    FrameLayout.LayoutParams webparams = new FrameLayout.LayoutParams(720, 1080);
+//                    ViewGroup bp = (ViewGroup) browserView.getParent();
+//                    bp.removeView(browserView);
+//                    rootView.addView(browserView, 0, webparams);
+//                    surfaceViewLocal.setId(101);
+//                    rootView.addView(surfaceViewLocal, 1, params);
+//                    appActivity.addContentView(browserView, webparams);
+//                    appActivity.addContentView(surfaceViewLocal, params);
+//                    appActivity.addContentView(surfaceViewRemote);
+//
+                    if (surfaceViewLocal != null && surfaceViewRemote != null) {
+                        appLayout.addView(surfaceViewLocal);
+                        appLayout.addView(surfaceViewRemote);
+                        callbackContext.success();
+                    }
                 }
             });
+            return true;
+        }
+
+        if (action.equals("setWebViewPosition")) {
+            try {
+                JSONObject position = args.getJSONObject(0);
+                final int x = position.getInt("x");
+                final int y = position.getInt("y");
+                final int width = position.getInt("width");
+                final int height = position.getInt("height");
+                appActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+                        params.leftMargin = x;
+                        params.topMargin = y;
+                        surfaceViewLocal.setLayoutParams(params);
+                        callbackContext.success();
+                    }
+                });
+            } catch (Exception e) {
+                callbackContext.error(ClientError.Build(ClientError.ERR_PARAMETER_ERROR, "设置local view位置错误。"));
+
+            }
+            return true;
+        }
+
+        if (action.equals("setLocalVideoPosition")) {
+            try {
+                JSONObject position = args.getJSONObject(0);
+                final int x = position.getInt("x");
+                final int y = position.getInt("y");
+                final int width = position.getInt("width");
+                final int height = position.getInt("height");
+                final boolean zIndexTop = position.getBoolean("z-index-top");
+                appActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+                            params.leftMargin = x;
+                            params.topMargin = y;
+                            surfaceViewLocal.setLayoutParams(params);
+                            surfaceViewLocal.setZOrderOnTop(zIndexTop);
+                            callbackContext.success();
+                        }
+                });
+            } catch (Exception e) {
+                callbackContext.error(ClientError.Build(ClientError.ERR_PARAMETER_ERROR, "设置local view位置错误。"));
+
+            }
+            return true;
+        }
+
+        if (action.equals("setRemoteVideoPosition")) {
+            try {
+                JSONObject position = args.getJSONObject(0);
+                final int x = position.getInt("x");
+                final int y = position.getInt("y");
+                final int width = position.getInt("width");
+                final int height = position.getInt("height");
+                final boolean zIndexTop = position.getBoolean("zIndexTop");
+                appActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+                        params.leftMargin = x;
+                        params.rightMargin = y;
+                        surfaceViewRemote.setLayoutParams(params);
+                        surfaceViewRemote.setZOrderOnTop(zIndexTop);
+                        callbackContext.success();
+                    }
+                });
+            } catch (Exception e) {
+                callbackContext.error(ClientError.Build(ClientError.ERR_PARAMETER_ERROR, "设置remote video位置错误。"));
+
+            }
+            return true;
         }
 
         if (action.equals("setVideoProfile")) {
@@ -219,9 +312,7 @@ public class Agora extends CordovaPlugin {
         if (action.equals("setupLocalVideo")) {
             final int uid = args.getInt(0);
 
-            VideoCanvas videoCanvas = new VideoCanvas();
-            videoCanvas.view = surfaceViewLocal;
-            videoCanvas.reanderMode = 2;    // RENDER_MODE_FIT
+            VideoCanvas videoCanvas = new VideoCanvas(surfaceViewLocal, 2, uid);
 
             int result = AgoraClient.getInstance().getRtcEngine().setupLocalVideo(videoCanvas);
 
@@ -236,9 +327,7 @@ public class Agora extends CordovaPlugin {
         if (action.equals("setupRemoteVideo")) {
             final int uid = args.getInt(0);
 
-            VideoCanvas videoCanvas = new VideoCanvas();
-            videoCanvas.view = surfaceViewRemote;
-            videoCanvas.reanderMode = 2;    // RENDER_MODE_FIT
+            VideoCanvas videoCanvas = new VideoCanvas(surfaceViewRemote, 2, uid);
 
             int result = AgoraClient.getInstance().getRtcEngine().setupRemoteVideo(videoCanvas);
 
@@ -344,7 +433,7 @@ public class Agora extends CordovaPlugin {
         if (action.equals("muteAllRemoteVideoStream")) {
             final boolean muted = args.getInt(0) != 0;
 
-            int result =  AgoraClient.getInstance().getRtcEngine().muteAllRemoteVideoStream(muted);
+            int result =  AgoraClient.getInstance().getRtcEngine().muteAllRemoteVideoStreams(muted);
             
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec muteAllRemoteVideoStream failed!"));
