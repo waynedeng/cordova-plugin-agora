@@ -401,8 +401,11 @@
     }
 }
 
-- (void) createRenderView:(CDVInvokedUrlCommand *)command {
-    
+- (void) createRendererView:(CDVInvokedUrlCommand *)command {
+    _localView = [[UIView alloc] init];
+    _remoteView = [[UIView alloc] init];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void) setVideoProfile:(CDVInvokedUrlCommand *)command {
@@ -424,8 +427,11 @@
 }
 
 - (void) setupLocalVideo:(CDVInvokedUrlCommand *)command {
-    CGRect viewRect = CGRectMake(10, 10, 320, 180);
-    _localView = [[UIView alloc] initWithFrame:viewRect];
+//    CGRect viewRect = CGRectMake(10, 10, 320, 180);
+//    UIImage* image = [[UIImage alloc] initWithContentsOfFile:@"/Users/panxiuqing/Desktop/icon_voice.png"];
+//    UIImageView* view = [[UIImageView alloc] initWithImage:image];
+//
+//    [_localView addSubview:view];
     
     AgoraRtcVideoCanvas* canvas = [[AgoraRtcVideoCanvas alloc] init];
     canvas.view = _localView;
@@ -433,8 +439,11 @@
     canvas.uid = 1;
     
     [self.viewController.view addSubview:_localView];
+//    [self.webView.superview addSubview:_localView];
+//    [self.webView.superview bringSubviewToFront:_localView];
     
     int code = [self.agoraKit setupLocalVideo:canvas];
+//    int code = 0;
     if(code == 0) {
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -447,14 +456,14 @@
 
 - (void) setupRemoteView:(CDVInvokedUrlCommand *)command {
     CGRect viewRect = CGRectMake(340, 10, 320, 180);
-    _remoteView = [[UIView alloc] initWithFrame:viewRect];
+    UIView* remoteView = [[UIView alloc] initWithFrame:viewRect];
     
     AgoraRtcVideoCanvas* canvas = [[AgoraRtcVideoCanvas alloc] init];
-    canvas.view = _remoteView;
+    canvas.view = remoteView;
     canvas.renderMode = AgoraRtc_Render_Fit;
     canvas.uid = 1;
     
-    [self.viewController.view addSubview:_remoteView];
+    [self.viewController.view addSubview:remoteView];
     
     int code = [self.agoraKit setupRemoteVideo:canvas];
     
@@ -612,15 +621,66 @@
 }
 
 - (void) setLocalVideoPosition:(CDVInvokedUrlCommand *)command {
+    NSDictionary* position = [[command arguments] objectAtIndex:0];
     
+    NSInteger x = [[position objectForKey:@"x"] integerValue];
+    NSInteger y = [[position objectForKey:@"y"] integerValue];
+    NSInteger width = [[position objectForKey:@"width"] integerValue];
+    NSInteger height = [[position objectForKey:@"height"] integerValue];
+    BOOL zIndexTop = [[position objectForKey:@"zIndexTop"] boolValue];
+    
+    CGRect frame = CGRectMake(x, y, width, height);
+    
+    [_localView setFrame:frame];
+    if (zIndexTop == true) {
+        [self.viewController.view bringSubviewToFront:_localView];
+    } else {
+        [self.viewController.view sendSubviewToBack:self._localView];
+    }
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void) setRemoteVideoPosition:(CDVInvokedUrlCommand *)command {
+    NSDictionary* position = [[command arguments] objectAtIndex:0];
     
+    NSInteger x = [[position objectForKey:@"x"] integerValue];
+    NSInteger y = [[position objectForKey:@"y"] integerValue];
+    NSInteger width = [[position objectForKey:@"width"] integerValue];
+    NSInteger height = [[position objectForKey:@"height"] integerValue];
+    BOOL zIndexTop = [[position objectForKey:@"zIndexTop"] boolValue];
+    
+    CGRect frame = CGRectMake(x, y, width, height);
+    
+    [_remoteView setFrame:frame];
+    if (zIndexTop == true) {
+        [self.viewController.view bringSubviewToFront:_remoteView];
+    } else {
+        [self.viewController.view sendSubviewToBack:self._remoteView];
+    }
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void) setWebViewPosition:(CDVInvokedUrlCommand *)command {
+    NSDictionary* position = [[command arguments] objectAtIndex:0];
     
+    NSInteger x = [[position objectForKey:@"x"] integerValue];
+    NSInteger y = [[position objectForKey:@"y"] integerValue];
+    NSInteger width = [[position objectForKey:@"width"] integerValue];
+    NSInteger height = [[position objectForKey:@"height"] integerValue];
+    BOOL zIndexTop = [[position objectForKey:@"zIndexTop"] boolValue];
+    
+    CGRect frame = CGRectMake(x, y, width, height);
+    
+    [self.webView setFrame:frame];
+    if (zIndexTop == true) {
+        [self.viewController.view bringSubviewToFront:self.webView];
+    } else {
+        [self.viewController.view sendSubviewToBack:self.webView];
+    }
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 -(void) listenEvents:(CDVInvokedUrlCommand *)command

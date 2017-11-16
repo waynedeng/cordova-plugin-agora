@@ -1,5 +1,8 @@
 ###BETA VERSION###
 
+## Notice
+For iOS you should add this path of libcrypto.a to Library Search Path
+
 ```
 Method:
 		addEventListener: function(eventName, callback) {},
