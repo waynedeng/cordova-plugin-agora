@@ -478,6 +478,20 @@
 
 // Todo: setVideoQualityParameters
 
+- (void) setVideoQualityParameters:(CDVInvokedUrlCommand *)command {
+    NSNumber* prefer = [[command arguments] objectAtIndex:0];
+    
+    int code = [self.agoraKit setVideoQualityParameters:[prefer boolValue]];
+    
+    if(code == 0) {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    } else {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:code];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+}
+
 - (void) startPreview:(CDVInvokedUrlCommand *)command {
     int code = [self.agoraKit startPreview];
     
