@@ -26,7 +26,7 @@
       <uses-permission android:name="android.permission.WAKE_LOCK"/>
       <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
       <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-      <uses-permission android:name="android.permission.CAMERA" android:required="false" />
+      <uses-permission android:name="android.permission.CAMERA" android:required="true" />
     </config-file>
     <source-file src="src/android/la/sou/plugin/agora/Agora.java" target-dir="src/la/sou/plugin/agora"/>
     <source-file src="src/android/la/sou/plugin/agora/AgoraClient.java" target-dir="src/la/sou/plugin/agora"/>

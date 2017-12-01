@@ -285,7 +285,7 @@ public class Agora extends CordovaPlugin {
 
         if (action.equals("setVideoProfile")) {
             final int profile = args.getInt(0);
-            final boolean swapWidthAndHeight = args.getInt(1) != 0;
+            final boolean swapWidthAndHeight = args.getBoolean(1);
 
             int result = AgoraClient.getInstance().getRtcEngine().setVideoProfile(profile, swapWidthAndHeight);
 
@@ -351,7 +351,7 @@ public class Agora extends CordovaPlugin {
         }
 
         if (action.equals("setVideoQualityParameters")) {
-            final boolean prefer = args.getInt(0) != 0;
+            final boolean prefer = args.getBoolean(0);
 
             int result =  AgoraClient.getInstance().getRtcEngine().setVideoQualityParameters(prefer);
             
@@ -405,7 +405,7 @@ public class Agora extends CordovaPlugin {
         }
 
         if (action.equals("muteLocalVideoStream")) {
-            final boolean muted = args.getInt(0) != 0;
+            final boolean muted = args.getBoolean(0);
 
             int result =  AgoraClient.getInstance().getRtcEngine().muteLocalVideoStream(muted);
             
@@ -418,7 +418,7 @@ public class Agora extends CordovaPlugin {
         }
 
         if (action.equals("muteAllRemoteVideoStream")) {
-            final boolean muted = args.getInt(0) != 0;
+            final boolean muted = args.getBoolean(0);
 
             int result =  AgoraClient.getInstance().getRtcEngine().muteAllRemoteVideoStreams(muted);
             
@@ -432,7 +432,7 @@ public class Agora extends CordovaPlugin {
 
         if (action.equals("muteRemoteVideoStream")) {
             final int uid = args.getInt(0);
-            final boolean muted = args.getInt(1) != 0;
+            final boolean muted = args.getBoolean(1);
 
             int result =  AgoraClient.getInstance().getRtcEngine().muteRemoteVideoStream(uid, muted);
             
