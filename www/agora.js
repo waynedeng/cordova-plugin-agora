@@ -178,10 +178,10 @@
         },
 
         setRemoteVideoPosition: function(position, successCallback, failCallback) {
-            cordova.exec(successCallback, failCallback, 'Agora', 'setLocalVideoPosition', [position]);
+            cordova.exec(successCallback, failCallback, 'Agora', 'setRemoteVideoPosition', [position]);
         },
 
-        setWebVidePostion: function(position, successCallback, failCallback) {
+        setWebViewPosition: function(position, successCallback, failCallback) {
             cordova.exec(successCallback, failCallback, 'Agora', 'setWebViewPosition', [position]);
         }
     };

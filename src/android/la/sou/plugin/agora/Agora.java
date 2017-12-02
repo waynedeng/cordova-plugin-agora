@@ -214,19 +214,13 @@ public class Agora extends CordovaPlugin {
                 final int y = position.getInt("y");
                 final int width = position.getInt("width");
                 final int height = position.getInt("height");
-                appActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
-                        params.leftMargin = x;
-                        params.topMargin = y;
-                        surfaceViewLocal.setLayoutParams(params);
-                        callbackContext.success();
-                    }
-                });
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+                params.leftMargin = x;
+                params.topMargin = y;
+                webView.setLayoutParams(params);
+                callbackContext.success();
             } catch (Exception e) {
                 callbackContext.error(ClientError.Build(ClientError.ERR_PARAMETER_ERROR, "设置local view位置错误。"));
-
             }
             return true;
         }
@@ -238,21 +232,15 @@ public class Agora extends CordovaPlugin {
                 final int y = position.getInt("y");
                 final int width = position.getInt("width");
                 final int height = position.getInt("height");
-                final boolean zIndexTop = position.getBoolean("z-index-top");
-                appActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
-                            params.leftMargin = x;
-                            params.topMargin = y;
-                            surfaceViewLocal.setLayoutParams(params);
-                            surfaceViewLocal.setZOrderOnTop(zIndexTop);
-                            callbackContext.success();
-                        }
-                });
+                final boolean zIndexTop = position.getBoolean("zIndexTop");
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+                params.leftMargin = x;
+                params.topMargin = y;
+                surfaceViewLocal.setLayoutParams(params);
+                surfaceViewLocal.setZOrderOnTop(zIndexTop); 
+                callbackContext.success();
             } catch (Exception e) {
                 callbackContext.error(ClientError.Build(ClientError.ERR_PARAMETER_ERROR, "设置local view位置错误。"));
-
             }
             return true;
         }
@@ -265,20 +253,14 @@ public class Agora extends CordovaPlugin {
                 final int width = position.getInt("width");
                 final int height = position.getInt("height");
                 final boolean zIndexTop = position.getBoolean("zIndexTop");
-                appActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
-                        params.leftMargin = x;
-                        params.rightMargin = y;
-                        surfaceViewRemote.setLayoutParams(params);
-                        surfaceViewRemote.setZOrderOnTop(zIndexTop);
-                        callbackContext.success();
-                    }
-                });
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+                params.leftMargin = x;
+                params.topMargin = y;
+                surfaceViewRemote.setLayoutParams(params);
+                surfaceViewRemote.setZOrderOnTop(zIndexTop);
+                callbackContext.success();
             } catch (Exception e) {
                 callbackContext.error(ClientError.Build(ClientError.ERR_PARAMETER_ERROR, "设置remote video位置错误。"));
-
             }
             return true;
         }
