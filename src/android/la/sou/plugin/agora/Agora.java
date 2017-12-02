@@ -197,6 +197,9 @@ public class Agora extends CordovaPlugin {
                     surfaceViewRemote = AgoraClient.getInstance().getRtcEngine()
                             .CreateRendererView(appContext);
 
+                    surfaceViewRemote.setZOrderOnTop(true);
+                    surfaceViewLocal.setZOrderOnTop(true);
+
                     if (surfaceViewLocal != null && surfaceViewRemote != null) {
                         appLayout.addView(surfaceViewLocal);
                         appLayout.addView(surfaceViewRemote);
@@ -214,11 +217,16 @@ public class Agora extends CordovaPlugin {
                 final int y = position.getInt("y");
                 final int width = position.getInt("width");
                 final int height = position.getInt("height");
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
-                params.leftMargin = x;
-                params.topMargin = y;
-                webView.setLayoutParams(params);
-                callbackContext.success();
+                appActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+                        params.leftMargin = x;
+                        params.topMargin = y;
+                        webView.setLayoutParams(params);
+                        callbackContext.success();
+                    }
+                });
             } catch (Exception e) {
                 callbackContext.error(ClientError.Build(ClientError.ERR_PARAMETER_ERROR, "设置local view位置错误。"));
             }
@@ -233,12 +241,20 @@ public class Agora extends CordovaPlugin {
                 final int width = position.getInt("width");
                 final int height = position.getInt("height");
                 final boolean zIndexTop = position.getBoolean("zIndexTop");
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
-                params.leftMargin = x;
-                params.topMargin = y;
-                surfaceViewLocal.setLayoutParams(params);
-                surfaceViewLocal.setZOrderOnTop(zIndexTop); 
-                callbackContext.success();
+                appActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+                        params.leftMargin = x;
+                        params.topMargin = y;
+                        surfaceViewLocal.setLayoutParams(params);
+                        if (zIndexTop) {
+                            appLayout.removeView(surfaceViewLocal);
+                            appLayout.addView(surfaceViewLocal);
+                        }
+                        callbackContext.success();
+                    }
+                });
             } catch (Exception e) {
                 callbackContext.error(ClientError.Build(ClientError.ERR_PARAMETER_ERROR, "设置local view位置错误。"));
             }
@@ -253,12 +269,20 @@ public class Agora extends CordovaPlugin {
                 final int width = position.getInt("width");
                 final int height = position.getInt("height");
                 final boolean zIndexTop = position.getBoolean("zIndexTop");
-                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
-                params.leftMargin = x;
-                params.topMargin = y;
-                surfaceViewRemote.setLayoutParams(params);
-                surfaceViewRemote.setZOrderOnTop(zIndexTop);
-                callbackContext.success();
+                appActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+                        params.leftMargin = x;
+                        params.topMargin = y;
+                        surfaceViewRemote.setLayoutParams(params);
+                        if (zIndexTop) {
+                            appLayout.removeView(surfaceViewRemote);
+                            appLayout.addView(surfaceViewRemote);
+                        }
+                        callbackContext.success();
+                    }
+                });
             } catch (Exception e) {
                 callbackContext.error(ClientError.Build(ClientError.ERR_PARAMETER_ERROR, "设置remote video位置错误。"));
             }
