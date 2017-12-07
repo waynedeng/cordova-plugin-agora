@@ -649,7 +649,7 @@
     if (zIndexTop == true) {
         [self.viewController.view bringSubviewToFront:_localView];
     } else {
-        [self.viewController.view sendSubviewToBack:self._localView];
+        [self.viewController.view sendSubviewToBack:_localView];
     }
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -670,7 +670,7 @@
     if (zIndexTop == true) {
         [self.viewController.view bringSubviewToFront:_remoteView];
     } else {
-        [self.viewController.view sendSubviewToBack:self._remoteView];
+        [self.viewController.view sendSubviewToBack:_remoteView];
     }
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
