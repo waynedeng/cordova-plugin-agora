@@ -87,7 +87,6 @@ public class Agora extends CordovaPlugin {
                         public void run() {
                             AgoraClient.Create(appId, context);
 							
-                            AgoraClient.getInstance().getRtcEngine().setDefaultAudioRoutetoSpeakerphone(true);
                             //禁止视频
                             AgoraClient.getInstance().getRtcEngine().disableVideo();
                             AgoraClient.getInstance().getRtcEngine().setDefaultAudioRoutetoSpeakerphone(true);
