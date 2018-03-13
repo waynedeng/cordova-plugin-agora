@@ -36,7 +36,7 @@ public class Agora extends CordovaPlugin {
 
         appContext = this.cordova.getActivity().getApplicationContext();
         appActivity = cordova.getActivity();
-        webView = appActivity.findViewById(100);
+        webView = (FrameLayout) appActivity.findViewById(100);
         appLayout = (FrameLayout) webView.getParent();
         super.pluginInitialize();
     }
