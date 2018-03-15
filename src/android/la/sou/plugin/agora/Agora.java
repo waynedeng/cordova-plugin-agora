@@ -216,6 +216,7 @@ public class Agora extends CordovaPlugin {
                 final int y = position.getInt("y");
                 final int width = position.getInt("width");
                 final int height = position.getInt("height");
+                final boolean zIndexTop = position.getBoolean("zIndexTop");
                 appActivity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -223,6 +224,10 @@ public class Agora extends CordovaPlugin {
                         params.leftMargin = x;
                         params.topMargin = y;
                         webView.setLayoutParams(params);
+                        if (zIndexTop) {
+                            appLayout.removeView(webView);
+                            appLayout.addView(webView);
+                        }
                         callbackContext.success();
                     }
                 });
