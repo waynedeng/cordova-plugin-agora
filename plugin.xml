@@ -9,6 +9,17 @@
   <js-module src="www/agora.js" name="agora">
     <clobbers target="agora"/>
   </js-module>
+
+  <!-- browser -->
+  <platform name="browser">
+    <js-module src="src/browser/AgoraRTCSDK-2.3.1.js" name="AgoraRTC">
+        <clobbers target="AgoraRTC" />
+    </js-module>
+    <js-module src="src/browser/AgoraPlugin.js" name="Agora">
+        <runs />
+    </js-module>
+  </platform>
+  
   <!-- android -->
   <platform name="android">
     <config-file target="res/xml/config.xml" parent="/*">
