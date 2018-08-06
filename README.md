@@ -2,6 +2,15 @@
 
 修改版本号，与Agora的SDK版本号，保持一致。
 
+iOS SDK因为文件太大，没有包含在git中，请自行去https://docs.agora.io/cn/2.3.1/download 下载，然后将以下文件覆盖src/iOS/libs下：
+```
+AgoraRtcEngineKit.framework
+AgoraRtcCryptoLoader.framework
+libcrypto.a
+```
+如果编译报找不到libcrypto.a，需要把"agoraVideo/Plugins/cordova-plugin-agora"路径添加到Library Search Path（添加在Build Settings中）。
+
+
 界面需要自己来做，如果需要呼叫、接听确认，则需要配合消息（信道）来完成。
 插件会在界面中渲染展现本地和远程视频。
 
