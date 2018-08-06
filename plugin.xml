@@ -68,17 +68,18 @@
     </config-file>
     <preference name="CAMERA_USAGE_DESCRIPTION" default="This app needs camera access"/>
     <config-file target="*-Info.plist" parent="NSCameraUsageDescription">
-      <string>$CAMERA_USAGE_DESCRIPTION</string>
+      <string>Video Call</string>
     </config-file>
     <preference name="MICROPHONE_USAGE_DESCRIPTION" default="This app needs microphone access"/>
     <config-file target="*-Info.plist" parent="NSMicrophoneUsageDescription">
-      <string>$MICROPHONE_USAGE_DESCRIPTION</string>
+      <string>Video Call</string>
     </config-file>
     <header-file src="src/iOS/AgoraPlugin.h" />
     <source-file src="src/iOS/AgoraPlugin.m" />
     <framework src="src/iOS/libs/libcrypto.a" custom="true" />
     <framework src="src/iOS/libs/AgoraRtcEngineKit.framework" custom="true" />
     <framework src="src/iOS/libs/AgoraRtcCryptoLoader.framework" custom="true" />
+    <framework src="Accelerate.framework" />
     <framework src="CoreMedia.framework" />
     <framework src="CoreMotion.framework" />
     <framework src="AVFoundation.framework" />
@@ -89,6 +90,7 @@
     <framework src="Security.framework" />
     <framework src="CFNetwork.framework" />
     <framework src="libc++.tbd" />
+    <framework src="libc++.1.tbd" />
     <framework src="libresolv.tbd" />
   </platform>
 </plugin>

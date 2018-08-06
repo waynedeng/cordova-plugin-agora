@@ -9,6 +9,7 @@
 #import <Cordova/CDVPluginResult.h>
 #import <Cordova/CDVInvokedUrlCommand.h>
 #import <AgoraRtcEngineKit/AgoraRtcEngineKit.h>
+#import <AVFoundation/AVCaptureDevice.h>
 
 @implementation AgoraPlugin 
 
@@ -23,10 +24,10 @@
  *  @param engine      The engine kit
  *  @param warningCode The warning code
  */
-- (void)rtcEngine:(AgoraRtcEngineKit *)engine didOccurWarning:(AgoraRtcWarningCode)warningCode {
-    NSDictionary *data = @{@"warn" : [NSNumber numberWithLong: warningCode]};
-    [self notifyEvent:@"onWarning" :data];
-}
+//- (void)rtcEngine:(AgoraRtcEngineKit *)engine didOccurWarning:(AgoraRtcWarningCode)warningCode {
+//    NSDictionary *data = @{@"warn" : [NSNumber numberWithLong: warningCode]};
+//    [self notifyEvent:@"onWarning" :data];
+//}
 
 /**
  *  The error occurred in SDK. The SDK couldn't resume to normal state, and the app need to handle it.
@@ -34,10 +35,10 @@
  *  @param engine    The engine kit
  *  @param errorCode The error code
  */
-- (void)rtcEngine:(AgoraRtcEngineKit *)engine didOccurError:(AgoraRtcErrorCode)errorCode {
-    NSDictionary *data = @{@"err" : [NSNumber numberWithLong: errorCode]};
-    [self notifyEvent:@"onError":data];
-}
+//- (void)rtcEngine:(AgoraRtcEngineKit *)engine didOccurError:(AgoraRtcErrorCode)errorCode {
+//    NSDictionary *data = @{@"err" : [NSNumber numberWithLong: errorCode]};
+//    [self notifyEvent:@"onError":data];
+//}
 
 /**
  *  Event of the user joined the channel.
@@ -73,10 +74,10 @@
  *  @param txQuality The sending network quality
  *  @param rxQuality The receiving network quality
  */
-- (void)rtcEngine:(AgoraRtcEngineKit *)engine networkQuality:(NSUInteger)uid txQuality:(AgoraRtcQuality)txQuality rxQuality:(AgoraRtcQuality)rxQuality {
-    NSDictionary *data = @{@"uid" : [NSNumber numberWithLong:uid], @"txQuality" : [NSNumber numberWithLong: txQuality], @"rxQuality" : [NSNumber numberWithLong: rxQuality]};
-    [self notifyEvent:@"onNetworkQuality" :data];
-}
+//- (void)rtcEngine:(AgoraRtcEngineKit *)engine networkQuality:(NSUInteger)uid txQuality:(AgoraRtcQuality)txQuality rxQuality:(AgoraRtcQuality)rxQuality {
+//    NSDictionary *data = @{@"uid" : [NSNumber numberWithLong:uid], @"txQuality" : [NSNumber numberWithLong: txQuality], @"rxQuality" : [NSNumber numberWithLong: rxQuality]};
+//    [self notifyEvent:@"onNetworkQuality" :data];
+//}
 
 /**
  *  Event of API call executed
@@ -130,7 +131,7 @@
  *  @param uid    The remote user id
  *  @param reason Reason of user offline, quit, drop or became audience
  */
-- (void)rtcEngine:(AgoraRtcEngineKit *)engine didOfflineOfUid:(NSUInteger)uid reason:(AgoraRtcUserOfflineReason)reason {
+- (void)rtcEngine:(AgoraRtcEngineKit *)engine didOfflineOfUid:(NSUInteger)uid reason:(AgoraUserOfflineReason)reason {
     NSDictionary *data = @{@"uid" : [NSNumber numberWithLong: uid], @"reason": [NSNumber numberWithLong: reason]};
     [self notifyEvent:@"onUserOffline" :data];
 }
@@ -144,11 +145,11 @@
  *  @param delay   The delay from the remote user
  *  @param lost    The percentage of lost packets
  */
-- (void)rtcEngine:(AgoraRtcEngineKit *)engine audioQualityOfUid:(NSUInteger)uid quality:(AgoraRtcQuality)quality delay:(NSUInteger)delay lost:(NSUInteger)lost {
-    NSDictionary *data = @{@"uid" : [NSNumber numberWithLong: uid], @"quality": [NSNumber numberWithLong: quality],
-                           @"delay": [NSNumber numberWithLong: delay], @"lost": [NSNumber numberWithLong: lost]};
-    [self notifyEvent:@"onAudioQuality" :data];
-}
+//- (void)rtcEngine:(AgoraRtcEngineKit *)engine audioQualityOfUid:(NSUInteger)uid quality:(AgoraRtcQuality)quality delay:(NSUInteger)delay lost:(NSUInteger)lost {
+//    NSDictionary *data = @{@"uid" : [NSNumber numberWithLong: uid], @"quality": [NSNumber numberWithLong: quality],
+//                           @"delay": [NSNumber numberWithLong: delay], @"lost": [NSNumber numberWithLong: lost]};
+//    [self notifyEvent:@"onAudioQuality" :data];
+//}
 
 
 /**
@@ -162,6 +163,26 @@
     [self notifyEvent:@"onConnectionInterrupted" :data];
 }
 
+- (void)rtcEngine:(AgoraRtcEngineKit *)engine firstRemoteVideoDecodedOfUid:(NSUInteger)uid size: (CGSize)size elapsed:(NSInteger)elapsed {
+    
+    AgoraRtcVideoCanvas* canvas = [[AgoraRtcVideoCanvas alloc] init];
+    canvas.view = self.remoteView;
+    canvas.renderMode = AgoraVideoRenderModeAdaptive;
+    canvas.uid = uid;
+    
+    
+//    AgoraRtcVideoCanvas *videoCanvas = [[AgoraRtcVideoCanvas alloc] init];
+//    videoCanvas.uid = uid;
+    // Since we are making a simple 1:1 video chat app, for simplicity sake, we are not storing the UIDs. You could use a mechanism such as an array to store the UIDs in a channel.
+    
+//    videoCanvas.view = self.remoteVideo;
+//    videoCanvas.renderMode = AgoraVideoRenderModeAdaptive;
+//
+    [self.agoraKit setupRemoteVideo:canvas];
+    // Bind remote video stream to view
+    
+}
+
 /**
  *  Event of loss connection with server. This event is reported after the connection is interrupted and exceed the retry period (10 seconds by default).
  *  In the mean time SDK automatically tries to reconnect with the server until APP calls leaveChannel.
@@ -172,6 +193,8 @@
     NSDictionary *data = [NSDictionary alloc];
     [self notifyEvent:@"onConnectionLost" :data];
 }
+
+//NSString *const myappID = @"8a7650e8c5144e7ab81b1c1103867e8c";
 
 
 - (void) create:(CDVInvokedUrlCommand*)command
@@ -184,7 +207,9 @@
     }
     
     NSDictionary* config = [[command arguments] objectAtIndex:0];
-    NSObject* appId = [config objectForKey:@"appId"];
+    NSString* appId = [config objectForKey:@"appId"];
+    
+    
     
     // Check command.arguments here.
     [self.commandDelegate runInBackground:^{
@@ -193,11 +218,14 @@
         //CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:payload];
         // The sendPluginResult method is thread-safe.
         //[self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    
+        NSLog(@"appId >> %@", appId);
         
-        self.agoraKit = [AgoraRtcEngineKit sharedEngineWithAppId:(NSString*)appId delegate:self];
-        [self.agoraKit setDefaultAudioRouteToSpeakerphone:true];
-        [self.agoraKit disableVideo];
+        self.agoraKit = [AgoraRtcEngineKit sharedEngineWithAppId:appId delegate:self];
+    
+        NSLog(@"sharedEngineWithAppId");
         
+        [self.agoraKit setChannelProfile:AgoraChannelProfileCommunication];
         CDVPluginResult* pluginResult;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -210,22 +238,28 @@
     NSString* channelKey = [[command arguments] objectAtIndex:0];
     NSString* channelName = [[command arguments] objectAtIndex:1];
     NSNumber* uid = [[command arguments] objectAtIndex:2];
-    NSUInteger UID = [uid unsignedIntegerValue];
     
-    int code = [self.agoraKit joinChannelByKey:channelKey channelName:channelName info:@"" uid:UID joinSuccess:nil];
-    
-    if(code == 0) {
+    [self.agoraKit joinChannelByToken:nil channelId:channelName info:nil uid:0 joinSuccess:^(NSString *channel, NSUInteger uid, NSInteger elapsed) {
+        // Join channel "demoChannel1"
+        [self.agoraKit setEnableSpeakerphone:YES];
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    } else {
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:code];
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    }
+    }];
+    
+//    if(code == 0) {
+//        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+//        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+//    } else {
+//        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsInt:code];
+//        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+//    }
 }
 
 
 - (void) leaveChannel:(CDVInvokedUrlCommand*)command
 {
+    [self.remoteView removeFromSuperview];
+    [self.localView removeFromSuperview];
     
     int code = [self.agoraKit leaveChannel:nil];
     
@@ -387,10 +421,12 @@
     NSNumber* profileNumber = [[command arguments] objectAtIndex:0];
     NSNumber* scenarioNumber = [[command arguments] objectAtIndex:1];
     
-    AgoraRtcAudioProfile profile = [profileNumber integerValue];
-    AgoraRtcAudioScenario scenario = [scenarioNumber integerValue];
+//    AgoraRtcAudioProfile profile = [profileNumber integerValue];
+//    AgoraRtcAudioScenario scenario = [scenarioNumber integerValue];
     
-    int code = [self.agoraKit setAudioProfile:profile scenario:scenario];
+//    int code = [self.agoraKit setAudioProfile:profile scenario:scenario];
+    
+    int code = 0;
     
     if(code == 0) {
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -402,8 +438,52 @@
 }
 
 - (void) createRendererView:(CDVInvokedUrlCommand *)command {
+    
+    [self.agoraKit enableVideo];
+    [self.agoraKit setVideoProfile:AgoraVideoProfileLandscape360P swapWidthAndHeight: false];
+    
+    NSLog(@"createRendererView");
+
     _localView = [[UIView alloc] init];
     _remoteView = [[UIView alloc] init];
+    
+    CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
+    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+    
+    CGRect viewRect = CGRectMake(0, 20, screenWidth, screenHeight - 80);
+    //    UIView* remoteView = [[UIView alloc] initWithFrame:viewRect];
+    [_remoteView setFrame:viewRect];
+    [self.viewController.view addSubview:_remoteView];
+    self.remoteView = _remoteView;
+    
+    
+    CGRect frame = CGRectMake(10, 20, 150, 200);
+    [_localView setFrame:frame];
+    
+//    [_localView setBackgroundColor:[UIColor blackColor]];
+    
+//    [self.webView.superview addSubview:_localView];
+//    [self.webView.superview bringSubviewToFront:_localView];
+//
+    [self.viewController.view addSubview:_localView];
+    [self.viewController.view bringSubviewToFront:_localView];
+    
+//    if (zIndexTop == true) {
+//        [self.viewController.view bringSubviewToFront:_localView];
+//    } else {
+//        [self.viewController.view sendSubviewToBack:_localView];
+//    }
+    
+    // setupLocalVideo
+    AgoraRtcVideoCanvas *videoCanvas = [[AgoraRtcVideoCanvas alloc] init];
+    videoCanvas.view = _localView;
+    videoCanvas.renderMode = AgoraVideoRenderModeAdaptive;
+    videoCanvas.uid = 0;
+    
+    self.localView = _localView;
+
+    [self.agoraKit setupLocalVideo:videoCanvas];
+    
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -412,7 +492,7 @@
     NSNumber* profileNumber = [[command arguments] objectAtIndex:0];
     NSNumber* swapWidthAndHeight = [[command arguments] objectAtIndex:1];
     
-    AgoraRtcVideoProfile profile = [profileNumber integerValue];
+    AgoraVideoProfile profile = [profileNumber integerValue];
     Boolean swap = [swapWidthAndHeight boolValue];      // Todo: bool
     
     int code = [self.agoraKit setVideoProfile:profile swapWidthAndHeight:swap];
@@ -435,7 +515,7 @@
     
     AgoraRtcVideoCanvas* canvas = [[AgoraRtcVideoCanvas alloc] init];
     canvas.view = _localView;
-    canvas.renderMode = AgoraRtc_Render_Fit;
+    canvas.renderMode = AgoraVideoRenderModeAdaptive;
     canvas.uid = 1;
     
     [self.viewController.view addSubview:_localView];
@@ -460,7 +540,7 @@
     
     AgoraRtcVideoCanvas* canvas = [[AgoraRtcVideoCanvas alloc] init];
     canvas.view = remoteView;
-    canvas.renderMode = AgoraRtc_Render_Fit;
+    canvas.renderMode = AgoraVideoRenderModeAdaptive;
     canvas.uid = 1;
     
     [self.viewController.view addSubview:remoteView];
@@ -519,7 +599,7 @@
 - (void) setLocalRenderMode:(CDVInvokedUrlCommand *)command {
     NSNumber* modeNumber = [[command arguments] objectAtIndex:0];
     
-    AgoraRtcRenderMode renderMode = [modeNumber integerValue];
+    AgoraVideoRenderMode renderMode = [modeNumber integerValue];
     
     int code = [self.agoraKit setLocalRenderMode:renderMode];
     
@@ -535,7 +615,7 @@
 - (void) setRemoteRenderMode:(CDVInvokedUrlCommand *)command {
     NSNumber* modeNumber = [[command arguments] objectAtIndex:0];
     
-    AgoraRtcRenderMode renderMode = [modeNumber integerValue];
+    AgoraVideoRenderMode renderMode = [modeNumber integerValue];
     
     int code = [self.agoraKit setLocalRenderMode:renderMode];
     
