@@ -44,6 +44,8 @@ var app = {
         console.log('initAgora');
         agora.create({appId: appId}, function() {
             console.log('create agora');
+            // iOS 下多加一步：（后续优化）
+            // agora.createRendererView();  
             agora.joinChannel(null, 'demoChannel1', null, function() {
                 }, function() {
                 }
