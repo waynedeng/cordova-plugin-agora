@@ -1,20 +1,30 @@
 package la.sou.plugin.agora;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.widget.FrameLayout;
+import android.view.ViewGroup;
+import android.view.Gravity;
 
 import io.agora.rtc.*;
 import io.agora.rtc.video.VideoCanvas;
 
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 
 public class Agora extends CordovaPlugin {
 
@@ -26,20 +36,52 @@ public class Agora extends CordovaPlugin {
 
     protected FrameLayout webView;
     protected FrameLayout appLayout;
-    protected SurfaceView surfaceViewLocal;
-    protected SurfaceView surfaceViewRemote;
+    private SurfaceView surfaceViewLocal;
+    private SurfaceView surfaceViewRemote;
+
+    private RtcEngine mRtcEngine;
 
     private static CallbackContext eventCallbackContext;
 
-    @Override
-    protected void pluginInitialize() {
+    private static final int PERMISSION_REQ_ID_RECORD_AUDIO = 22;
+    private static final int PERMISSION_REQ_ID_CAMERA = PERMISSION_REQ_ID_RECORD_AUDIO + 1;
 
-        appContext = this.cordova.getActivity().getApplicationContext();
-        appActivity = cordova.getActivity();
-        webView = (FrameLayout) appActivity.findViewById(100);
-        appLayout = (FrameLayout) webView.getParent();
-        super.pluginInitialize();
+
+
+    public boolean checkSelfPermission(String permission, int requestCode) {
+        Log.i("agora", "checkSelfPermission " + permission + " " + requestCode);
+        if (ContextCompat.checkSelfPermission(appContext,
+                permission)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(appActivity,
+                    new String[]{permission},
+                    requestCode);
+            return false;
+        }
+        return true;
     }
+
+    @Override
+    public void initialize(CordovaInterface cordova, CordovaWebView webView1) {
+        super.initialize(cordova, webView1);
+        Log.d("agora", "pluginInitialize...");
+        appContext = cordova.getActivity().getApplicationContext();
+        appActivity = cordova.getActivity();
+        // webView = appActivity.findViewById(100);
+        // appLayout = (FrameLayout) webView.getParent();
+        // your init code here
+    }
+
+    // @Override
+    // protected void pluginInitialize() {
+
+    //     appContext = this.cordova.getActivity().getApplicationContext();
+    //     appActivity = cordova.getActivity();
+    //     webView = (FrameLayout) appActivity.findViewById(100);
+    //     appLayout = (FrameLayout) webView.getParent();
+    //     super.pluginInitialize();
+    // }
 
 
 //    @Override
@@ -67,9 +109,12 @@ public class Agora extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
 
-        Log.d(TAG, action + " Called");
+        Log.d(TAG, action + " agora Called");
 
         if (action.equals("prepare")) {
+            if (checkSelfPermission(Manifest.permission.RECORD_AUDIO, PERMISSION_REQ_ID_RECORD_AUDIO) && checkSelfPermission(Manifest.permission.CAMERA, PERMISSION_REQ_ID_CAMERA)) {
+                Log.d(TAG, action + " permission approved");
+            }
             return true;
         }
 
@@ -81,15 +126,17 @@ public class Agora extends CordovaPlugin {
                 } else {
 
                     final String appId = config.getString("appId");
-                    final Context context = this.cordova.getActivity().getApplicationContext();
+                    Log.d(TAG, "appID: " + appId);
+//                    final Context context = this.cordova.getActivity().getApplicationContext();
                     appActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            AgoraClient.Create(appId, context);
-							
+
+                            initAgoraEngineAndJoinChannel(appId);
+//                            AgoraClient.Create(appId, appContext);
+//
                             //禁止视频
-                            AgoraClient.getInstance().getRtcEngine().disableVideo();
-                            AgoraClient.getInstance().getRtcEngine().setDefaultAudioRoutetoSpeakerphone(true);
+//                            AgoraClient.getInstance().getRtcEngine().disableVideo();
                             callbackContext.success();
                         }
                     });
@@ -102,12 +149,12 @@ public class Agora extends CordovaPlugin {
         }
 
         if (action.equals("enableAudio")) {
-            AgoraClient.getInstance().getRtcEngine().enableAudio();
+            mRtcEngine.enableAudio();
             return true;
         }
 
         if (action.equals("disableAudio")) {
-            AgoraClient.getInstance().getRtcEngine().disableAudio();
+            mRtcEngine.disableAudio();
             return true;
         }
 
@@ -118,8 +165,9 @@ public class Agora extends CordovaPlugin {
             appActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    AgoraClient.getInstance().getRtcEngine()
-                            .joinChannel(channelKey, channelName, null, uid);
+                    joinChannel(channelName);
+//                    AgoraClient.getInstance().getRtcEngine()
+//                            .joinChannel(channelKey, channelName, null, uid);
                     callbackContext.success();
                 }
             });
@@ -139,14 +187,20 @@ public class Agora extends CordovaPlugin {
         }
 
         if (action.equals("leaveChannel")) {
-            int result =  AgoraClient.getInstance().getRtcEngine().leaveChannel();
+//            int result =  AgoraClient.getInstance().getRtcEngine().leaveChannel();
+//
+//            if(AgoraError.ERR_OK != result) {
+//                callbackContext.error(ClientError.Build(result, "exec leaveChannel failed!"));
+//            } else {
+//                callbackContext.success();
+//            }
+            appActivity.runOnUiThread(new Runnable() {
+              @Override
+              public void run() {
+                  leaveChannel();
+              }});
 
-            if(AgoraError.ERR_OK != result) {
-                callbackContext.error(ClientError.Build(result, "exec leaveChannel failed!"));
-            } else {
-                callbackContext.success();
-            }
-
+            callbackContext.success();
             return true;
         }
 
@@ -187,55 +241,78 @@ public class Agora extends CordovaPlugin {
             return true;
         }
 
-        if (action.equals("createRendererView")) {
-            appActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    surfaceViewLocal = AgoraClient.getInstance().getRtcEngine()
-                            .CreateRendererView(appContext);
-                    surfaceViewRemote = AgoraClient.getInstance().getRtcEngine()
-                            .CreateRendererView(appContext);
+//        if (action.equals("createRendererView")) {
+//            appActivity.runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//
+//                    AgoraClient.getInstance().getRtcEngine().enableVideo();
+//                    AgoraClient.getInstance().getRtcEngine().setVideoProfile(30, false);
+//                    AgoraClient.getInstance().getRtcEngine().setDefaultAudioRoutetoSpeakerphone(true);
+//
+//                    surfaceViewLocal = AgoraClient.getInstance().getRtcEngine()
+//                            .CreateRendererView(appContext);
+//                    surfaceViewRemote = AgoraClient.getInstance().getRtcEngine()
+//                            .CreateRendererView(appContext);
+//
+//                    surfaceViewRemote.setZOrderOnTop(true);
+//                    surfaceViewLocal.setZOrderOnTop(true);
+//
+//
+//                    FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(400, 600);
+//                    params.leftMargin = 50;
+//                    params.topMargin = 50;
+//
+//                    FrameLayout.LayoutParams params1 = new FrameLayout.LayoutParams(
+//                            ViewGroup.LayoutParams.MATCH_PARENT,
+//                            ViewGroup.LayoutParams.MATCH_PARENT,
+//                            Gravity.CENTER);
+//                    params1.bottomMargin = 200;
+//
+//                    if (surfaceViewLocal != null && surfaceViewRemote != null) {
+//                        surfaceViewRemote.setLayoutParams(params1);
+//                        surfaceViewLocal.setLayoutParams(params);
+//                        appActivity.addContentView(surfaceViewRemote, params1);
+//                        appActivity.addContentView(surfaceViewLocal, params);
+//
+//                    VideoCanvas videoCanvas = new VideoCanvas(surfaceViewLocal, 2, 0);
+//
+//                    AgoraClient.getInstance().getRtcEngine().setupLocalVideo(videoCanvas);
+//
+//                        callbackContext.success();
+//                    }
+//                }
+//            });
+//            return true;
+//        }
 
-                    surfaceViewRemote.setZOrderOnTop(true);
-                    surfaceViewLocal.setZOrderOnTop(true);
-
-                    if (surfaceViewLocal != null && surfaceViewRemote != null) {
-                        appLayout.addView(surfaceViewLocal);
-                        appLayout.addView(surfaceViewRemote);
-                        callbackContext.success();
-                    }
-                }
-            });
-            return true;
-        }
-
-        if (action.equals("setWebViewPosition")) {
-            try {
-                JSONObject position = args.getJSONObject(0);
-                final int x = position.getInt("x");
-                final int y = position.getInt("y");
-                final int width = position.getInt("width");
-                final int height = position.getInt("height");
-                final boolean zIndexTop = position.getBoolean("zIndexTop");
-                appActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
-                        params.leftMargin = x;
-                        params.topMargin = y;
-                        webView.setLayoutParams(params);
-                        if (zIndexTop) {
-                            appLayout.removeView(webView);
-                            appLayout.addView(webView);
-                        }
-                        callbackContext.success();
-                    }
-                });
-            } catch (Exception e) {
-                callbackContext.error(ClientError.Build(ClientError.ERR_PARAMETER_ERROR, "设置local view位置错误。"));
-            }
-            return true;
-        }
+//        if (action.equals("setWebViewPosition")) {
+//            try {
+//                JSONObject position = args.getJSONObject(0);
+//                final int x = position.getInt("x");
+//                final int y = position.getInt("y");
+//                final int width = position.getInt("width");
+//                final int height = position.getInt("height");
+//                final boolean zIndexTop = position.getBoolean("zIndexTop");
+//                appActivity.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(width, height);
+//                        params.leftMargin = x;
+//                        params.topMargin = y;
+//                        webView.setLayoutParams(params);
+//                        if (zIndexTop) {
+//                            appLayout.removeView(webView);
+//                            appLayout.addView(webView);
+//                        }
+//                        callbackContext.success();
+//                    }
+//                });
+//            } catch (Exception e) {
+//                callbackContext.error(ClientError.Build(ClientError.ERR_PARAMETER_ERROR, "设置local view位置错误。"));
+//            }
+//            return true;
+//        }
 
         if (action.equals("setLocalVideoPosition")) {
             try {
@@ -253,8 +330,14 @@ public class Agora extends CordovaPlugin {
                         params.topMargin = y;
                         surfaceViewLocal.setLayoutParams(params);
                         if (zIndexTop) {
-                            appLayout.removeView(surfaceViewLocal);
-                            appLayout.addView(surfaceViewLocal);
+                            try {
+                                ((ViewGroup) surfaceViewLocal.getParent()).removeView(surfaceViewLocal);
+                            } catch (Exception e) {
+                                Log.e("removeAllVideo", "surfaceViewLocal");
+                            }
+                            appActivity.addContentView(surfaceViewLocal, params);
+//                            appLayout.removeView(surfaceViewLocal);
+//                            appLayout.addView(surfaceViewLocal);
                         }
                         callbackContext.success();
                     }
@@ -281,8 +364,15 @@ public class Agora extends CordovaPlugin {
                         params.topMargin = y;
                         surfaceViewRemote.setLayoutParams(params);
                         if (zIndexTop) {
-                            appLayout.removeView(surfaceViewRemote);
-                            appLayout.addView(surfaceViewRemote);
+//                            appLayout.removeView(surfaceViewRemote);
+//                            appLayout.addView(surfaceViewRemote);
+                            try {
+                                ((ViewGroup) surfaceViewRemote.getParent()).removeView(surfaceViewRemote);
+                            } catch (Exception e) {
+                                Log.e("removeAllVideo", "surfaceViewRemote");
+                            }
+
+                            appActivity.addContentView(surfaceViewRemote, params);
                         }
                         callbackContext.success();
                     }
@@ -308,37 +398,24 @@ public class Agora extends CordovaPlugin {
         }
 
         if (action.equals("setupLocalVideo")) {
-            final int uid = args.getInt(0);
+//            final int uid = args.getInt(0);
 
-            VideoCanvas videoCanvas = new VideoCanvas(surfaceViewLocal, 2, uid);
+            setupLocalVideo();
 
-            int result = AgoraClient.getInstance().getRtcEngine().setupLocalVideo(videoCanvas);
-
-            if(AgoraError.ERR_OK != result) {
-                callbackContext.error(ClientError.Build(result, "exec setupLocalVideo failed!"));
-            } else {
-                callbackContext.success();
-            }
+            callbackContext.success();
             return true;
         }
 
         if (action.equals("setupRemoteVideo")) {
             final int uid = args.getInt(0);
 
-            VideoCanvas videoCanvas = new VideoCanvas(surfaceViewRemote, 2, uid);
-
-            int result = AgoraClient.getInstance().getRtcEngine().setupRemoteVideo(videoCanvas);
-
-            if(AgoraError.ERR_OK != result) {
-                callbackContext.error(ClientError.Build(result, "exec setupRemoteVideo failed!"));
-            } else {
-                callbackContext.success();
-            }
+            setupRemoteVideo(uid);
+            callbackContext.success();
             return true;
         }
 
         if (action.equals("disableVideo")) {
-            int result =  AgoraClient.getInstance().getRtcEngine().disableVideo();
+            int result =  mRtcEngine.disableVideo();
 
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec disableVideo failed!"));
@@ -350,7 +427,7 @@ public class Agora extends CordovaPlugin {
         }
 
         if (action.equals("enableVideo")) {
-            int result =  AgoraClient.getInstance().getRtcEngine().enableVideo();
+            int result =  mRtcEngine.enableVideo();
 
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec enableVideo failed!"));
@@ -404,7 +481,7 @@ public class Agora extends CordovaPlugin {
         }
 
         if (action.equals("switchCamera")) {
-            int result =  AgoraClient.getInstance().getRtcEngine().switchCamera();
+            int result =  mRtcEngine.switchCamera();
             
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec switchCamera failed!"));
@@ -417,7 +494,7 @@ public class Agora extends CordovaPlugin {
         if (action.equals("muteLocalVideoStream")) {
             final boolean muted = args.getBoolean(0);
 
-            int result =  AgoraClient.getInstance().getRtcEngine().muteLocalVideoStream(muted);
+            int result =  mRtcEngine.muteLocalVideoStream(muted);
             
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec muteLocalVideoStream failed!"));
@@ -430,7 +507,7 @@ public class Agora extends CordovaPlugin {
         if (action.equals("muteAllRemoteVideoStream")) {
             final boolean muted = args.getBoolean(0);
 
-            int result =  AgoraClient.getInstance().getRtcEngine().muteAllRemoteVideoStreams(muted);
+            int result =  mRtcEngine.muteAllRemoteVideoStreams(muted);
             
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec muteAllRemoteVideoStream failed!"));
@@ -444,7 +521,7 @@ public class Agora extends CordovaPlugin {
             final int uid = args.getInt(0);
             final boolean muted = args.getBoolean(1);
 
-            int result =  AgoraClient.getInstance().getRtcEngine().muteRemoteVideoStream(uid, muted);
+            int result =  mRtcEngine.muteRemoteVideoStream(uid, muted);
             
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec muteRemoteVideoStream failed!"));
@@ -473,7 +550,7 @@ public class Agora extends CordovaPlugin {
             final String callId = args.getString(0);
             final String description = args.getString(1);
             
-            int result = AgoraClient.getInstance().getRtcEngine().complain(callId, description);
+            int result = mRtcEngine.complain(callId, description);
 
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec complain failed!"));
@@ -484,7 +561,7 @@ public class Agora extends CordovaPlugin {
         }
 
         if (action.equals("enableSpeakerphone")) {
-            int result =  AgoraClient.getInstance().getRtcEngine().setEnableSpeakerphone(true);
+            int result =  mRtcEngine.setEnableSpeakerphone(true);
 
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec setEnableSpeakerphone failed!"));
@@ -496,7 +573,7 @@ public class Agora extends CordovaPlugin {
 
         if(action.equals("disableSpeakerphone")) {
 
-            int result =  AgoraClient.getInstance().getRtcEngine().setEnableSpeakerphone(false);
+            int result =  mRtcEngine.setEnableSpeakerphone(false);
 
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec setEnableSpeakerphone failed!"));
@@ -509,7 +586,7 @@ public class Agora extends CordovaPlugin {
         if(action.equals("startRecordingService")) {
 
             final String recordKey = args.getString(0);
-            int result =  AgoraClient.getInstance().getRtcEngine().startRecordingService(recordKey);
+            int result =  mRtcEngine.startRecordingService(recordKey);
 
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec startServerRecord failed!"));
@@ -522,7 +599,7 @@ public class Agora extends CordovaPlugin {
         if(action.equals("stopRecordingService")) {
 
             final String recordKey = args.getString(0);
-            int result =  AgoraClient.getInstance().getRtcEngine().stopRecordingService(recordKey);
+            int result =  mRtcEngine.stopRecordingService(recordKey);
 
             if(AgoraError.ERR_OK != result) {
                 callbackContext.error(ClientError.Build(result, "exec stopServerRecord failed!"));
@@ -533,7 +610,7 @@ public class Agora extends CordovaPlugin {
         }
 
         if(action.equals("getCallId")) {
-            String result =  AgoraClient.getInstance().getRtcEngine().getCallId();
+            String result =  mRtcEngine.getCallId();
             PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
             callbackContext.sendPluginResult(pluginResult);
             return true;
@@ -548,6 +625,151 @@ public class Agora extends CordovaPlugin {
         }
 
         return super.execute(action, args, callbackContext);
+    }
+
+
+//    private RtcEngine mRtcEngine;// Tutorial Step 1
+
+    private final IRtcEngineEventHandler mRtcEventHandler = new IRtcEngineEventHandler() { // Tutorial Step 1
+        @Override
+        public void onFirstRemoteVideoDecoded(final int uid, int width, int height, int elapsed) { // Tutorial Step 5
+            appActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setupRemoteVideo(uid);
+                }
+            });
+        }
+
+        @Override
+        public void onUserOffline(int uid, int reason) { // Tutorial Step 7
+            appActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    onRemoteUserLeft();
+                }
+            });
+        }
+
+//        @Override
+//        public void onUserMuteVideo(final int uid, final boolean muted) { // Tutorial Step 10
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    onRemoteUserVideoMuted(uid, muted);
+//                }
+//            });
+//        }
+
+        @Override
+        public void onJoinChannelSuccess(String channel, int uid, int elapsed) {
+            Log.d("onJoinChannelSuccess", channel + " " + uid);
+            try {
+                JSONObject data = new JSONObject();
+                data.put("channel", channel);
+                data.put("uid", uid);
+                data.put("elapsed", elapsed);
+                Log.d("MessageHandler",   "onJoinChannelSuccess");
+                Agora.notifyEvent("onJoinChannelSuccess", data);
+                //mRtcEngine.setEnableSpeakerphone(true);
+            } catch (JSONException ignored) {}
+        }
+
+    };
+
+
+    private void initAgoraEngineAndJoinChannel(String appId) {
+        initializeAgoraEngine(appId);     // Tutorial Step 1
+        setupVideoProfile();         // Tutorial Step 2
+        setupLocalVideo();           // Tutorial Step 3
+    }
+
+    // Tutorial Step 1
+    private void initializeAgoraEngine(String appId) {
+        try {
+            mRtcEngine = RtcEngine.create(appContext, appId, mRtcEventHandler);
+        } catch (Exception e) {
+            Log.e("Agora", Log.getStackTraceString(e));
+
+            throw new RuntimeException("NEED TO check rtc sdk init fatal error\n" + Log.getStackTraceString(e));
+        }
+    }
+
+    // Tutorial Step 2
+    private void setupVideoProfile() {
+        mRtcEngine.enableVideo();
+        mRtcEngine.setVideoProfile(Constants.VIDEO_PROFILE_360P, false);
+    }
+
+    // Tutorial Step 3
+    private void setupLocalVideo() {
+        //local
+
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(400, 600);
+        params.leftMargin = 50;
+        params.topMargin = 50;
+
+        surfaceViewLocal = RtcEngine.CreateRendererView(appContext);
+        surfaceViewLocal.setZOrderMediaOverlay(true);
+
+        appActivity.addContentView(surfaceViewLocal, params);
+        mRtcEngine.setupLocalVideo(new VideoCanvas(surfaceViewLocal, VideoCanvas.RENDER_MODE_ADAPTIVE, 0));
+    }
+
+    // Tutorial Step 4
+    private void joinChannel(String channelName) {
+        mRtcEngine.joinChannel(null, channelName, null, 0); // if you do not specify the uid, we will generate the uid for you
+    }
+
+
+    // Tutorial Step 5
+    private void setupRemoteVideo(int uid) {
+        FrameLayout.LayoutParams params1 = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                Gravity.CENTER);
+        params1.bottomMargin = 200;
+
+
+        surfaceViewRemote = RtcEngine.CreateRendererView(appContext);
+//        surfaceViewRemote.setZOrderMediaOverlay(true);
+        appActivity.addContentView(surfaceViewRemote, params1);
+
+
+//        container.addView(surfaceView);
+        mRtcEngine.setupRemoteVideo(new VideoCanvas(surfaceViewRemote, VideoCanvas.RENDER_MODE_ADAPTIVE, uid));
+
+        surfaceViewRemote.setTag(uid); // for mark purpose
+
+    }
+
+    // Tutorial Step 6
+    private void leaveChannel() {
+        mRtcEngine.leaveChannel();
+        RtcEngine.destroy();
+        removeAllVideo();
+    }
+
+    private void removeAllVideo() {
+
+        Log.d("removeAllVideo", surfaceViewLocal.toString());
+
+        try {
+            ((ViewGroup) surfaceViewRemote.getParent()).removeView(surfaceViewRemote);
+        } catch (Exception e) {
+            Log.e("removeAllVideo", "surfaceViewRemote");
+        }
+
+        try {
+            ((ViewGroup) surfaceViewLocal.getParent()).removeView(surfaceViewLocal);
+        } catch (Exception e) {
+            Log.e("removeAllVideo", "surfaceViewLocal");
+        }
+
+    }
+
+    private void onRemoteUserLeft() {
+        Log.d("onRemoteUserLeft", "onRemoteUserLeft");
     }
 
     public static void notifyEvent(String event, JSONObject data) {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin 
-  xmlns="http://apache.org/cordova/ns/plugins/1.0" id="cordova-plugin-agora" version="0.0.1">
+  xmlns="http://apache.org/cordova/ns/plugins/1.0" id="cordova-plugin-agora" version="2.2.3">
   <name>Agora Audio Chat</name>
   <description>    Cordova Plugin for Agora Audio Chat http://cn.agora.io/  </description>
   <engines>
@@ -43,6 +43,8 @@
     <source-file src="src/android/libs/x86/libagora-rtc-sdk-jni.so" target-dir="libs/x86" framework="true"/>
     <source-file src="src/android/libs/x86/libagora-crypto.so" target-dir="libs/x86" framework="true"/>
     <!-- <source-file src="src/android/libs/x86/libHDACEngine.so" target-dir="libs/x86" framework="true"/> -->
+    <source-file src="src/android/libs/include/AgoraBase.h" target-dir="libs/include" framework="true"/>
+    <source-file src="src/android/libs/include/IAgoraService.h" target-dir="libs/include" framework="true"/>
     <source-file src="src/android/libs/include/IAgoraMediaEngine.h" target-dir="libs/include" framework="true"/>
     <source-file src="src/android/libs/include/IAgoraRtcEngine.h" target-dir="libs/include" framework="true"/>
   </platform>

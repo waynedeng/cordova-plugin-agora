@@ -1,3 +1,55 @@
+### 2.2.3 ###
+
+修改版本号，与Agora的SDK版本号，保持一致。
+
+界面需要自己来做，如果需要呼叫、接听确认，则需要配合消息（信道）来完成。
+插件会在界面中渲染展现本地和远程视频。
+
+调试需要真机，不支持模拟器。
+
+示例代码：
+
+```javascript
+var app = {
+    switchCamera: function() {
+        // 切换摄像头
+        agora.switchCamera();
+    },
+    mute: function() {
+        // 静音
+        agora.muteLocalVideoStream();
+    },
+    disableVideo: function() {
+        // 关闭视频
+        agora.disableVideo();
+    },
+    endCall: function() {
+        // 结束呼叫
+        agora.leaveChannel();
+    },
+    initAgora: function() {
+        // 初始化，直接进入频道
+        // 默认在初始化时候，设置了音视频的配置
+        // 同时渲染了本地的视频，如果需要调整本地视频的位置，可以使用setLocalVideoPosition
+        let appId = "xxxxx";
+        console.log('initAgora');
+        agora.create({appId: appId}, function() {
+            console.log('create agora');
+            agora.joinChannel(null, 'demoChannel1', null, function() {
+                }, function() {
+                }
+            )
+        }, function(error) {
+            console.error(error.code +":" + error.message);
+        });
+
+        agora.addEventListener("onJoinChannelSuccess", function(data) {
+            console.log(data);
+        });
+    },
+};
+```
+
 ###BETA VERSION###
 
 ## Notice

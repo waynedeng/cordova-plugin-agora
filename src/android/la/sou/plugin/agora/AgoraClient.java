@@ -1,5 +1,7 @@
 package la.sou.plugin.agora;
 import android.content.Context;
+import android.util.Log;
+
 import io.agora.rtc.RtcEngine;
 
 public class AgoraClient {
@@ -16,7 +18,7 @@ public class AgoraClient {
         _appId = appId;
         _messageHandler = new MessageHandler();
         _applicationContext = applicationContext;
-
+        Log.d("AgoraClient", "appID: " + _appId);
         try {
             _rtcEngine = RtcEngine.create(_applicationContext, _appId, _messageHandler);
         } catch (Exception e) {
